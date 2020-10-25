@@ -1,20 +1,27 @@
 const imageContainer = document.getElementById('image-container');
 const loader = document.getElementById('loader');
-// const errorMessage = document.getElementById('no-images');
 
 let readyToLoadImages = false;
 let imagesLoaded = 0;
 let totalImages = 0;
 let photosArray = [];
-// let errorCounter = 0;
+
+const imgLoadCountInitial = 5;
+const imgLoadCount = 30;
+let isInitialLoad = true;
 
 //  Unsplash API
-const fetchedImagesCount = 10;
+let imagesToFetchCount = imgLoadCountInitial;
 const apiKey = 'lYs_grrLpCCD01ocnyY1J8SeDZH3h6HRXOjRMd9f9pw';
-const apiUrl = `https://api.unsplash.com/photos/random/?client_id=${apiKey}&count=${fetchedImagesCount}`;
+let apiUrl = `https://api.unsplash.com/photos/random/?client_id=${apiKey}&count=${imagesToFetchCount}`;
+
+// API update after initial load
+function updateAPIURLwithNewCount(newCount) {
+  apiUrl = `https://api.unsplash.com/photos/random/?client_id=${apiKey}&count=${newCount}`;
+}
 
 // Check if all images loaded
-function imageLoadedCheck(){
+function imagesAreLoadedCheck(){
   imagesLoaded++;
   if(imagesLoaded === totalImages) {
     readyToLoadImages = true;
@@ -29,12 +36,6 @@ function setAttributes(element,attributes) {
   }
 }
 
-// function showUnableToGetImagesMessage() {
-//   if (!loader.hidden) {
-//     loader.hidden = true;
-//     errorMessage.hidden = false;
-//   }
-// }
 
 // Create Elements for links and photos, Add to DOM
 function displayImages() {
@@ -55,7 +56,7 @@ function displayImages() {
       alt: photo.alt_description,
       title: photo.alt_description,
     });
-    img.addEventListener('load',imageLoadedCheck);
+    img.addEventListener('load',imagesAreLoadedCheck);
     // Put <img> inside <a>, then both inside imageContainer element
     item.appendChild(img);
     imageContainer.appendChild(item);
@@ -66,18 +67,16 @@ function displayImages() {
 async function getImages() {
   
   try {
-    // errorMessage.hidden = true;
     const response = await fetch(apiUrl);
     photosArray = await response.json();
-    // throw new Error('oops');
+
     displayImages();
+    if(isInitialLoad){
+      updateAPIURLwithNewCount(imgLoadCount);
+      isInitialLoad = false;
+    }
   } catch (error) {
-    // errorCounter++;
-    // if(errorCounter<10){
-    //   getImages();
-    // } else {
-    //   showUnableToGetImagesMessage();
-    // }   
+ 
   }
 }
 
