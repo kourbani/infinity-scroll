@@ -1,24 +1,24 @@
 const imageContainer = document.getElementById('image-container');
 const loader = document.getElementById('loader');
+// const errorMessage = document.getElementById('no-images');
 
-let ready = false;
+let readyToLoadImages = false;
 let imagesLoaded = 0;
 let totalImages = 0;
 let photosArray = [];
+// let errorCounter = 0;
 
 //  Unsplash API
-const count = 30;
+const fetchedImagesCount = 10;
 const apiKey = 'lYs_grrLpCCD01ocnyY1J8SeDZH3h6HRXOjRMd9f9pw';
-const apiUrl = `https://api.unsplash.com/photos/random/?client_id=${apiKey}&count=${count}`;
+const apiUrl = `https://api.unsplash.com/photos/random/?client_id=${apiKey}&count=${fetchedImagesCount}`;
 
 // Check if all images loaded
-function imageLoaded(){
-  console.log('image loaded');
+function imageLoadedCheck(){
   imagesLoaded++;
   if(imagesLoaded === totalImages) {
-    ready = true;
+    readyToLoadImages = true;
     loader.hidden = true;
-    console.log('ready = ', ready);
   }
 }
 
@@ -29,11 +29,17 @@ function setAttributes(element,attributes) {
   }
 }
 
+// function showUnableToGetImagesMessage() {
+//   if (!loader.hidden) {
+//     loader.hidden = true;
+//     errorMessage.hidden = false;
+//   }
+// }
+
 // Create Elements for links and photos, Add to DOM
-function displayPhotos() {
+function displayImages() {
   imagesLoaded = 0;
   totalImages = photosArray.length;
-  console.log('total images ', totalImages);
 
   photosArray.forEach((photo) => {
     // Create <a> to link to unsplash
@@ -49,8 +55,7 @@ function displayPhotos() {
       alt: photo.alt_description,
       title: photo.alt_description,
     });
-    // Check if load completed
-    img.addEventListener('load',imageLoaded);
+    img.addEventListener('load',imageLoadedCheck);
     // Put <img> inside <a>, then both inside imageContainer element
     item.appendChild(img);
     imageContainer.appendChild(item);
@@ -58,23 +63,31 @@ function displayPhotos() {
 }
 
 //  Get Photos from Unsplash API
-async function getPhotos() {
+async function getImages() {
+  
   try {
+    // errorMessage.hidden = true;
     const response = await fetch(apiUrl);
     photosArray = await response.json();
-    displayPhotos();
+    // throw new Error('oops');
+    displayImages();
   } catch (error) {
-    
+    // errorCounter++;
+    // if(errorCounter<10){
+    //   getImages();
+    // } else {
+    //   showUnableToGetImagesMessage();
+    // }   
   }
 }
 
 // Check if scroll is near bottom
 window.addEventListener('scroll',() => {
-  if(window.innerHeight + window.scrollY >= document.body.offsetHeight - 1000 && ready) {
-    ready = false;
-    getPhotos();
+  if(window.innerHeight + window.scrollY >= document.body.offsetHeight - 1000 && readyToLoadImages) {
+    readyToLoadImages = false;
+    getImages();
   }
 });
 
 // On load
-getPhotos();
+getImages();
